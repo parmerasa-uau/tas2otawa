@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<!-- DOCTYPE program SYSTEM "tas_annotations.dtd" -->
+<program xsi:schemaLocation="http://www.w3schools.com tas.xsd" xmlns="http://www.w3schools.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <threads>
+        <thread cluster="0" core="1" id="1" routine="main"/>
+        <thread cluster="0" core="2" id="2" routine="tas_thread"/>
+        <thread cluster="0" core="3" id="3" routine="tas_thread"/>
+        <thread cluster="0" core="4" id="4" routine="tas_thread"/>
+        <thread cluster="0" core="5" id="5" routine="tas_thread"/>
+    </threads>
+    <tas_taskparallelisms>
+        <tas_taskparallelism id="A" description="A Task Parallelism" main_as_worker="1" >
+            <threads>
+                <thread ref="1" main="1"/>
+                <thread ref="2"/>
+                <thread ref="3"/>
+            </threads>
+            <tasks>
+                <task function="foo_1" thread="1"/>
+                <task function="foo_2" thread="2"/>
+            </tasks>
+        </tas_taskparallelism>
+      
+        <tas_taskparallelism id="D" description="D Task Parallelism" main_as_worker="1" called_by="A" >
+            <threads>
+                <thread ref="2" main="1"/>
+                <thread ref="4"/>
+            </threads>
+            <tasks>
+                <task function="bar_2" thread="2"/>
+                <task function="bar_4" thread="4"/>
+                <task function="bar_5" thread="5"/>
+            </tasks>
+        </tas_taskparallelism>
+      
+        <tas_taskparallelism id="E" description="E Task Parallelism" main_as_worker="1" executed_after="D" >
+            <threads>
+                <thread ref="2" main="1"/>
+                <thread ref="5"/>
+            </threads>
+            <tasks>
+                <task function="bar_2" thread="2"/>
+                <task function="bar_5" thread="5"/>
+            </tasks>
+        </tas_taskparallelism>
+    </tas_taskparallelisms>
+    <tas_dataparallelisms>
+        <tas_dataparallelism id="tas_pipeline_step_tp" description="Data Parallelism for step 2 in Pipeline" main_as_worker="1" nr_args="4" called_by="tas_pipeline_fft" executed_after="D" init_id="foo" finalize_id="bar"  init_id="foo" finalize_id="bar" >
+            <threads>
+                <thread ref="4" main="1"/>
+                <thread ref="5"/>
+                <thread ref="6"/>
+                <thread ref="7"/>
+            </threads>
+            <task function="a_to_A_sub"/>
+        </tas_dataparallelism>
+    </tas_dataparallelisms>
+    <tas_pipelineparallelisms>
+        <tas_pipelineparallelism id="tas_pipeline_fft" description="Parallel FFT calculation with pipeline" main_as_worker="1" iterations="25" called_by="tas_pipeline_fft" executed_after="D"  init_id="foo" finalize_id="bar">
+            <threads>
+                <thread ref="0" main="1"/>
+                <thread ref="1"/>
+                <thread ref="2"/>
+                <thread ref="3"/>
+                <thread ref="4"/>
+            </threads>
+            <tasks>
+                <task function="create_fft_input"/>
+                <task function="a_to_A"/>
+                <task function="AB_to_C"/>
+                <task function="C_to_D"/>
+                <task function="D_to_d"/>
+            </tasks>
+        </tas_pipelineparallelism>
+    </tas_pipelineparallelisms>
+</program>

@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    TODO define vocabulary identification
+    PUBLIC ID: -//vendor//vocabulary//EN
+    SYSTEM ID: http://server/path/otawa_annotations.dtd
+
+-->
+
+<!--
+    An example how to use this DTD from your XML document:
+
+    <?xml version="1.0"?>
+
+    <!DOCTYPE program SYSTEM "otawa_annotations.dtd">
+
+    <program>
+    ...
+    </program>
+-->
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT program (barrier|sync|thread)*>
+<!ATTLIST program
+    xsi:schemaLocation CDATA #IMPLIED
+    xmlns:xsi CDATA #IMPLIED
+    xmlns CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT thread (last_sync_in_loop|last_sync|wait|routine|contender)*>
+<!ATTLIST thread
+    id CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT routine EMPTY>
+<!ATTLIST routine
+    id CDATA #IMPLIED
+  >
+
+<!--- A sync tag has to be created for enery synchronisation primitive call, e.g., barrier_wait. -->
+<!ELEMENT sync (thread|in_loop)*>
+<!ATTLIST sync
+    ref CDATA #IMPLIED
+    id CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT contender (sync)*>
+<!ATTLIST contender
+    id CDATA #IMPLIED
+  >
+
+<!-- inloop has to be placed only if the sync. primitive is executed in a loop -->
+<!ELEMENT in_loop EMPTY>
+<!ATTLIST in_loop
+    id CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT wait (last_em|last_me|last_em_in_loop|last_me_in_loop|last_sync|sync)*>
+<!ATTLIST wait
+    id CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT last_sync EMPTY>
+<!ATTLIST last_sync
+    ref CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT last_me_in_loop EMPTY>
+<!ATTLIST last_me_in_loop
+    ref CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT last_em_in_loop EMPTY>
+<!ATTLIST last_em_in_loop
+    ref CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT last_me EMPTY>
+<!ATTLIST last_me
+    ref CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT last_em EMPTY>
+<!ATTLIST last_em
+    ref CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT barrier (thread|in_loop)*>
+<!ATTLIST barrier
+    id CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT last_sync_in_loop EMPTY>
+<!ATTLIST last_sync_in_loop
+    ref CDATA #IMPLIED
+  >

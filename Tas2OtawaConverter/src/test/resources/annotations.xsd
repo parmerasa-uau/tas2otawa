@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+	To use this XSD from your XML document:
+
+	<?xml version="1.0"?>
+
+	<program xmlns="http://www.w3schools.com"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:schemaLocation="http://www.w3schools.com URI_TO_annotations.xsd">
+		
+		...
+
+	</program>
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		targetNamespace="http://www.w3schools.com"
+		xmlns="http://www.w3schools.com"
+		elementFormDefault="qualified">
+
+	<xsd:annotation>
+		<xsd:documentation xml:lang="en">
+			XML Schema of annotation language for describing synchronisations in parallel applications.
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:element name="program">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="primitives" type="primitivesType" minOccurs="0"/>
+				<xsd:element name="thread" type="progThreadType" maxOccurs="unbounded"/>
+				<xsd:choice minOccurs="0" maxOccurs="unbounded">
+					<xsd:element name="sync" type="syncType"/>
+					<xsd:element name="barrier" type="barrierType"/>
+					<xsd:element name="csection" type="csectionType"/>
+				</xsd:choice>
+			</xsd:sequence>
+		</xsd:complexType>
+
+		<!--xsd:key name="sync_id_key">
+			<xsd:selector xpath="sync|barrier|csection"/>
+			<xsd:field xpath="@id"/>
+		</xsd:key>
+
+		<xsd:keyref name="sync_id_ref" refer="sync_id_key">
+			<xsd:selector xpath=".//sync|.//last_sync|.//last_sync_in_loop|.//last_me|.//last_em|.//last_me_in_loop|.//last_em_in_loop"/>
+			<xsd:field xpath="@ref"/>
+		</xsd:keyref-->
+	</xsd:element>
+
+	<xsd:complexType name="primitivesType">
+		<xsd:all>
+			<xsd:element name="lock" type="primitiveType" minOccurs="0"/>
+			<xsd:element name="unlock" type="primitiveType" minOccurs="0"/>
+			<xsd:element name="cond_signal" type="primitiveType" minOccurs="0"/>
+			<xsd:element name="cond_broadcast" type="primitiveType" minOccurs="0"/>
+			<xsd:element name="cond_wait" type="primitiveType" minOccurs="0"/>
+			<xsd:element name="barrier_wait" type="primitiveType" minOccurs="0"/>
+			<xsd:element name="join" type="primitiveType" minOccurs="0"/>
+		</xsd:all>
+	</xsd:complexType>
+
+	<xsd:complexType name="primitiveType">
+		<xsd:attribute name="id" type="xsd:Name" use="required"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="progThreadType">
+		<xsd:sequence>
+			<xsd:element name="routine">
+				<xsd:complexType>
+					<xsd:attribute name="id" type="xsd:Name" use="required"/>
+				</xsd:complexType>
+			</xsd:element>
+
+			<xsd:element name="flowfacts" minOccurs="0" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:attribute name="path" type="xsd:string" use="required"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+
+		<xsd:attribute name="id" type="threadIdType" use="required"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="syncType">
+		<xsd:sequence>
+			<xsd:element name="in_loop" type="in_loopType" minOccurs="0"/>
+
+			<xsd:element name="thread" minOccurs="0" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:choice minOccurs="0" maxOccurs="unbounded">
+						<xsd:element name="contender" type="contenderType"/>
+						<xsd:element name="wait" type="waitType"/>
+					</xsd:choice>
+
+					<xsd:attribute name="id" type="threadIdType" use="required"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+
+		<xsd:attribute name="id" type="xsd:ID" use="required"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="barrierType">
+		<xsd:sequence>
+			<xsd:element name="in_loop" type="in_loopType" minOccurs="0"/>
+
+			<xsd:element name="thread" minOccurs="0" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:all>
+						<xsd:element name="last_sync" type="syncRefType"/>
+
+						<xsd:element name="last_sync_in_loop" type="syncRefType" minOccurs="0">
+							<xsd:annotation>
+								<xsd:documentation xml:lang="en">
+									Valid only if in_loop is defined.
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:all>
+
+					<xsd:attribute name="id" type="threadIdType" use="required"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+
+		<xsd:attribute name="id" type="xsd:NMTOKEN" use="required"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="csectionType">
+		<xsd:sequence>
+			<xsd:element name="thread" minOccurs="0" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:attribute name="id" type="threadIdType" use="required"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+
+		<xsd:attribute name="id" type="xsd:NMTOKENS" use="required"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="contenderType">
+		<xsd:sequence>
+			<xsd:element name="sync" type="syncRefType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+
+		<xsd:attribute name="id" type="threadIdType" use="required"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="waitType">
+		<xsd:sequence>
+			<xsd:element name="sync" type="syncRefType"/>
+
+			<xsd:choice>
+				<xsd:sequence>
+					<xsd:element name="last_me" type="syncRefType"/>
+					<xsd:element name="last_em" type="syncRefType"/>
+				</xsd:sequence>
+
+				<xsd:element name="last_sync" type="syncRefType"/>
+			</xsd:choice>
+
+			<xsd:choice minOccurs="0">
+				<xsd:sequence>
+					<xsd:element name="last_me_in_loop" type="syncRefType"/>
+					<xsd:element name="last_em_in_loop" type="syncRefType"/>
+				</xsd:sequence>
+
+				<xsd:element name="last_sync_in_loop" type="syncRefType"/>
+			</xsd:choice>
+		</xsd:sequence>
+
+		<xsd:attribute name="id" type="threadIdType" use="required"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="in_loopType">
+		<xsd:attribute name="id" type="xsd:NMTOKEN" use="required"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="syncRefType">
+		<xsd:attribute name="ref" type="xsd:IDREF" use="required"/>
+	</xsd:complexType>
+
+	<xsd:simpleType name="threadIdType">
+		<xsd:restriction base="xsd:token">
+			<xsd:pattern value="([\d]+-[\d]+|[\d]+from\((([\d]+-[\d]+)|[\d]+)(,(([\d]+-[\d]+)|[\d]+))*\)|[\d]+)(,([\d]+-[\d]+|[\d]+from\((([\d]+-[\d]+)|[\d]+)(,(([\d]+-[\d]+)|[\d]+))*\)|[\d]+))*"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+</xsd:schema>

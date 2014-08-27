@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<program xsi:schemaLocation="http://www.w3schools.com annotations.xsd" xmlns="http://www.w3schools.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <thread id="0">
+      <!-- <mapping cluster="0" core="0" /> -->
+      <routine id="main"/>
+   </thread>
+   <thread id="1">
+      <!-- <mapping cluster="0" core="1" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <thread id="2">
+      <!-- <mapping cluster="1" core="0" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <thread id="3">
+      <!-- <mapping cluster="1" core="1" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <!-- Main thread executing task parallelism "Task Parallelism in pedal_to_medal" (id = tas_tp_main_loop_tp) -->
+   <sync id="tas_tp_main_loop_tp.tas_taskparallel_execute_work_available_barrier">
+      <in_loop id="tas_taskparallel_execute_loop"/>
+      <thread id="0">
+         <wait id="1">
+            <sync ref="tas_thread_work_available_barrier"/>
+            <last_me ref="BEGIN"/>
+            <last_em ref="BEGIN"/>
+            <last_me_in_loop ref="tas_tp_main_loop_tp.tas_taskparallel_execute_work_done_barrier"/>
+            <last_em_in_loop ref="tas_thread_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="tas_tp_main_loop_tp.tas_taskparallel_execute_work_done_barrier">
+      <thread id="0">
+         <wait id="1">
+            <sync ref="tas_thread_work_done_barrier"/>
+            <last_me ref="tas_tp_main_loop_tp.tas_taskparallel_execute_work_available_barrier"/>
+            <last_em ref="tas_thread_work_available_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- Main thread executing task parallelism "Moving joints in parallel" (id = tas_tp_shovel_tp) -->
+   <sync id="tas_tp_shovel_tp.tas_taskparallel_execute_work_available_barrier">
+      <in_loop id="tas_taskparallel_execute_loop"/>
+      <thread id="1">
+         <wait id="2,3">
+            <sync ref="tas_thread_work_available_barrier"/>
+            <last_me ref="BEGIN"/>
+            <last_em ref="BEGIN"/>
+            <last_me_in_loop ref="tas_tp_shovel_tp.tas_taskparallel_execute_work_done_barrier"/>
+            <last_em_in_loop ref="tas_thread_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="tas_tp_shovel_tp.tas_taskparallel_execute_work_done_barrier">
+      <thread id="1">
+         <wait id="2,3">
+            <sync ref="tas_thread_work_done_barrier"/>
+            <last_me ref="tas_tp_shovel_tp.tas_taskparallel_execute_work_available_barrier"/>
+            <last_em ref="tas_thread_work_available_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- Worker threads waiting for work executing a skeleton -->
+   <sync id="tas_thread_work_available_barrier">
+      <in_loop id="loop_runnable"/>
+      <!-- for task parallelism skeleton "Task Parallelism in pedal_to_medal" (id = tas_tp_main_loop_tp) -->
+      <thread id="1">
+         <wait id="0">
+            <sync ref="tas_tp_main_loop_tp.tas_taskparallel_execute_work_available_barrier"/>
+            <last_me ref="BEGIN"/>
+            <last_em ref="BEGIN"/>
+            <last_me_in_loop ref="tas_thread_work_done_barrier"/>
+            <last_em_in_loop ref="tas_tp_main_loop_tp.tas_taskparallel_execute_work_done_barrier"/>
+         </wait>
+      </thread>
+      <!-- for task parallelism skeleton "Moving joints in parallel" (id = tas_tp_shovel_tp) -->
+      <thread id="2,3">
+         <wait id="1">
+            <sync ref="tas_tp_shovel_tp.tas_taskparallel_execute_work_available_barrier"/>
+            <last_me ref="BEGIN"/>
+            <last_em ref="BEGIN"/>
+            <last_me_in_loop ref="tas_thread_work_done_barrier"/>
+            <last_em_in_loop ref="tas_tp_shovel_tp.tas_taskparallel_execute_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- Worker threads waiting for completion of work -->
+   <sync id="tas_thread_work_done_barrier">
+      <!-- for task parallelism skeleton "Task Parallelism in pedal_to_medal" (id = tas_tp_main_loop_tp) -->
+      <thread id="1">
+         <wait id="0">
+            <sync ref="tas_tp_main_loop_tp.tas_taskparallel_execute_work_done_barrier"/>
+            <last_me ref="tas_thread_work_available_barrier"/>
+            <last_em ref="tas_tp_main_loop_tp.tas_taskparallel_execute_work_available_barrier"/>
+         </wait>
+      </thread>
+      <!-- for task parallelism skeleton "Moving joints in parallel" (id = tas_tp_shovel_tp) -->
+      <thread id="2,3">
+         <wait id="1">
+            <sync ref="tas_tp_shovel_tp.tas_taskparallel_execute_work_done_barrier"/>
+            <last_me ref="tas_thread_work_available_barrier"/>
+            <last_em ref="tas_tp_shovel_tp.tas_taskparallel_execute_work_available_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- additional csection for skeletons -->
+   <csection id="tas_worker_get_worker_available_lock tas_get_workers_available_worker_available_lock tas_worker_release_worker_available_lock tas_thread_worker_available_lock">
+      <thread id="0,1,2,3"/>
+   </csection>
+</program>

@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!DOCTYPE program SYSTEM "tas_annotations.dtd">
+<program xsi:schemaLocation="http://www.w3schools.com tas.xsd" xmlns="http://www.w3schools.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <threads>
+      <thread cluster="0" core="1" id="1" routine="main"/>
+      <thread cluster="0" core="2" id="2" routine="tas_thread"/>
+      <thread cluster="0" core="3" id="3" routine="tas_thread"/>
+      <thread cluster="0" core="4" id="4" routine="tas_thread"/>
+      <thread cluster="0" core="5" id="5" routine="tas_thread"/>
+   </threads>
+   <tas_taskparallelisms>
+      <tas_taskparallelism id="A" description="A Task Parallelism" main_as_worker="1" init_id="A_ini" finalize_id="A_finalize" >
+         <threads>
+            <thread ref="1" main="1"/>
+            <thread ref="2"/>
+            <thread ref="3"/>
+         </threads>
+         <tasks>
+            <task function="foo_1" thread="1"/>
+            <task function="foo_2" thread="2"/>
+            <task function="foo_3" thread="3"/>
+         </tasks>
+      </tas_taskparallelism>
+      
+      <tas_taskparallelism id="D" description="D Task Parallelism" main_as_worker="1" called_by="A" init_id="D_ini" finalize_id="D_fin">
+         <threads>
+            <thread ref="2" main="1"/>
+            <thread ref="4"/>
+            <thread ref="5"/>
+         </threads>
+         <tasks>
+            <task function="bar_2" thread="2"/>
+            <task function="bar_4" thread="4"/>
+            <task function="bar_5" thread="5"/>
+         </tasks>
+      </tas_taskparallelism>
+      
+      <tas_taskparallelism id="E" description="E Task Parallelism" main_as_worker="1" executed_after="D" init_id="E_ini" finalize_id="E_fin">
+         <threads>
+            <thread ref="2" main="1"/>
+            <thread ref="4"/>
+            <thread ref="5"/>
+         </threads>
+         <tasks>
+            <task function="bar_2" thread="2"/>
+            <task function="bar_4" thread="4"/>
+            <task function="bar_5" thread="5"/>
+         </tasks>
+      </tas_taskparallelism>
+
+
+	</tas_taskparallelisms>
+</program>

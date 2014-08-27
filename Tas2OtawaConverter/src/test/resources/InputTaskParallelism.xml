@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<program xsi:schemaLocation="http://www.w3schools.com tas.xsd" xmlns="http://www.w3schools.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <threads>
+      <thread cluster="0" core="0" id="0" routine="main"/>
+      <thread cluster="0" core="1" id="1" routine="tas_thread"/>
+      <thread cluster="1" core="0" id="2" routine="tas_thread"/>
+      <thread cluster="1" core="1" id="3" routine="tas_thread"/>
+   </threads>
+   <tas_taskparallelisms>
+      <tas_taskparallelism id="tas_tp_main_loop_tp" description="Task Parallelism in pedal_to_medal" main_as_worker="1">
+         <threads>
+            <thread ref="0" main="1"/>
+            <thread ref="1"/>
+         </threads>
+         <tasks>
+            <task function="chassis" thread="0"/>
+            <task function="shovel" thread="1"/>
+         </tasks>
+      </tas_taskparallelism>
+      <tas_taskparallelism id="tas_tp_shovel_tp" description="Moving joints in parallel" main_as_worker="1" called_by="tas_tp_main_loop_tp">
+         <threads>
+            <thread ref="1" main="1"/>
+            <thread ref="2"/>
+            <thread ref="3"/>
+         </threads>
+         <tasks>
+            <task function="joint_a" thread="1"/>
+            <task function="joint_b" thread="2"/>
+            <task function="joint_c" thread="3"/>
+         </tasks>
+      </tas_taskparallelism>
+   </tas_taskparallelisms>
+</program>

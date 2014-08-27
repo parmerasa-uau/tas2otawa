@@ -1,0 +1,524 @@
+
+==========
+Input:
+==========
+
+<?xml version="1.0"?>
+<program xsi:schemaLocation="http://www.w3schools.com tas.xsd" xmlns="http://www.w3schools.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <threads>
+      <thread cluster="0" core="1" id="1" routine="main"/>
+      <thread cluster="0" core="2" id="2" routine="tas_thread"/>
+      <thread cluster="0" core="3" id="3" routine="tas_thread"/>
+      <thread cluster="0" core="4" id="4" routine="tas_thread"/>
+      <thread cluster="0" core="5" id="5" routine="tas_thread"/>
+   </threads>
+   <tas_taskparallelisms>
+      <tas_taskparallelism id="A" finalize_id="A_finalize" init_id="A_ini" description="A Task Parallelism" main_as_worker="1" executed_after="BEGIN" called_by="BEGIN">
+         <threads>
+            <thread ref="1" main="1"/>
+            <thread ref="2"/>
+            <thread ref="3"/>
+         </threads>
+         <tasks>
+            <task function="foo_1" thread="1"/>
+            <task function="foo_2" thread="2"/>
+            <task function="foo_3" thread="3"/>
+         </tasks>
+      </tas_taskparallelism>
+      <tas_taskparallelism id="D" finalize_id="D_fin" init_id="D_ini" description="D Task Parallelism" main_as_worker="1" executed_after="BEGIN" called_by="A">
+         <threads>
+            <thread ref="2" main="1"/>
+            <thread ref="4"/>
+            <thread ref="5"/>
+         </threads>
+         <tasks>
+            <task function="bar_2" thread="2"/>
+            <task function="bar_4" thread="4"/>
+            <task function="bar_5" thread="5"/>
+         </tasks>
+      </tas_taskparallelism>
+      <tas_taskparallelism id="E" finalize_id="E_fin" init_id="E_ini" description="E Task Parallelism" main_as_worker="1" executed_after="D" called_by="BEGIN">
+         <threads>
+            <thread ref="2" main="1"/>
+            <thread ref="4"/>
+            <thread ref="5"/>
+         </threads>
+         <tasks>
+            <task function="bar_2" thread="2"/>
+            <task function="bar_4" thread="4"/>
+            <task function="bar_5" thread="5"/>
+         </tasks>
+      </tas_taskparallelism>
+   </tas_taskparallelisms>
+   <tas_dataparallelisms/>
+   <tas_pipelineparallelisms/>
+   <csections/>
+</program>
+STARTING WITH printThreadUsage
+START[A]  <A>[1]    A[2]    A[3] 
+START[B]  <A>[1] <B>A[2]    A[3]    B[4]    B[5] 
+  END[B]  <A>[1] <B>A[2]    A[3]    B[4]    B[5] 
+START[C]  <A>[1] A<C>[2]    A[3]    C[4]    C[5] 
+  END[C]  <A>[1] A<C>[2]    A[3]    C[4]    C[5] 
+  END[A]  <A>[1]    A[2]    A[3] 
+A TasTaskParallelism:A
+B TasTaskParallelism:D
+C TasTaskParallelism:E
+FINISHED WITH printThreadUsage
+
+==========
+Output:
+==========
+
+<?xml version="1.0"?>
+<program xsi:schemaLocation="http://www.w3schools.com annotations.xsd" xmlns="http://www.w3schools.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <thread id="1">
+      <!-- <mapping cluster="0" core="1" /> -->
+      <routine id="main"/>
+   </thread>
+   <thread id="2">
+      <!-- <mapping cluster="0" core="2" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <thread id="3">
+      <!-- <mapping cluster="0" core="3" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <thread id="4">
+      <!-- <mapping cluster="0" core="4" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <thread id="5">
+      <!-- <mapping cluster="0" core="5" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <!-- Worker threads waiting for work executing a skeleton -->
+   <sync id="tas_thread_work_available_barrier">
+      <in_loop id="loop_runnable"/>
+      <thread id="2,3">
+         <!-- wait for task parallelism skeleton "A Task Parallelism" (id = A) [T 2,3] -->
+         <wait id="1">
+            <sync ref="A.tas_taskparallel_execute_work_available_barrier"/>
+            <last_me ref="tas_thread_worker_init_barrier"/>
+            <last_em ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+            <last_me_in_loop ref="tas_thread_work_done_barrier"/>
+            <last_em_in_loop ref="A.tas_taskparallel_execute_work_done_barrier"/>
+         </wait>
+         <!-- tas_abstract_finalize for skeleton "A Task Parallelism" (id = A_finalize) - barrier for main and worker threads - II -->
+         <wait id="1">
+            <sync ref="A_finalize.tas_abstract_finalize_work_available_barrier"/>
+            <last_me ref="tas_thread_work_done_barrier"/>
+            <last_em ref="A.tas_taskparallel_execute_work_done_barrier"/>
+         </wait>
+      </thread>
+      <thread id="4,5">
+         <!-- wait for task parallelism skeleton "D Task Parallelism" (id = D) [T 4,5] -->
+         <wait id="2">
+            <sync ref="D.tas_taskparallel_execute_work_available_barrier"/>
+            <last_me ref="tas_thread_worker_init_barrier"/>
+            <last_em ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+            <last_me_in_loop ref="tas_thread_work_done_barrier"/>
+            <last_em_in_loop ref="D.tas_taskparallel_execute_work_done_barrier"/>
+         </wait>
+         <!-- tas_abstract_finalize for skeleton "D Task Parallelism" (id = D_fin) - barrier for main and worker threads - II -->
+         <wait id="2">
+            <sync ref="D_fin.tas_abstract_finalize_work_available_barrier"/>
+            <last_me ref="tas_thread_work_done_barrier"/>
+            <last_em ref="D.tas_taskparallel_execute_work_done_barrier"/>
+         </wait>
+         <!-- wait for task parallelism skeleton "E Task Parallelism" (id = E) [T 4,5] -->
+         <wait id="2">
+            <sync ref="E.tas_taskparallel_execute_work_available_barrier"/>
+            <last_me ref="tas_thread_work_done_barrier"/>
+            <last_em ref="D_fin.tas_abstract_finalize_work_done_barrier"/>
+            <last_me_in_loop ref="tas_thread_work_done_barrier"/>
+            <last_em_in_loop ref="E.tas_taskparallel_execute_work_done_barrier"/>
+         </wait>
+         <!-- tas_abstract_finalize for skeleton "E Task Parallelism" (id = E_fin) - barrier for main and worker threads - II -->
+         <wait id="2">
+            <sync ref="E_fin.tas_abstract_finalize_work_available_barrier"/>
+            <last_me ref="tas_thread_work_done_barrier"/>
+            <last_em ref="E.tas_taskparallel_execute_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- Worker threads waiting for completion of work -->
+   <sync id="tas_thread_work_done_barrier">
+      <thread id="2,3">
+         <!-- wait for task parallelism skeleton "A Task Parallelism" (id = A) [T 2,3] -->
+         <wait id="1">
+            <sync ref="A.tas_taskparallel_execute_work_done_barrier"/>
+            <last_me ref="tas_thread_work_available_barrier"/>
+            <last_em ref="A.tas_taskparallel_execute_work_available_barrier"/>
+         </wait>
+         <!-- tas_abstract_finalize for skeleton "A Task Parallelism" (id = A_finalize) - barrier for main and worker threads - III -->
+         <wait id="1">
+            <sync ref="A_finalize.tas_abstract_finalize_work_done_barrier"/>
+            <last_me ref="tas_thread_work_available_barrier"/>
+            <last_em ref="A_finalize.tas_abstract_finalize_work_available_barrier"/>
+         </wait>
+      </thread>
+      <thread id="4,5">
+         <!-- wait for task parallelism skeleton "D Task Parallelism" (id = D) [T 4,5] -->
+         <wait id="2">
+            <sync ref="D.tas_taskparallel_execute_work_done_barrier"/>
+            <last_me ref="tas_thread_work_available_barrier"/>
+            <last_em ref="D.tas_taskparallel_execute_work_available_barrier"/>
+         </wait>
+         <!-- tas_abstract_finalize for skeleton "D Task Parallelism" (id = D_fin) - barrier for main and worker threads - III -->
+         <wait id="2">
+            <sync ref="D_fin.tas_abstract_finalize_work_done_barrier"/>
+            <last_me ref="tas_thread_work_available_barrier"/>
+            <last_em ref="D_fin.tas_abstract_finalize_work_available_barrier"/>
+         </wait>
+         <!-- wait for task parallelism skeleton "E Task Parallelism" (id = E) [T 4,5] -->
+         <wait id="2">
+            <sync ref="E.tas_taskparallel_execute_work_done_barrier"/>
+            <last_me ref="tas_thread_work_available_barrier"/>
+            <last_em ref="E.tas_taskparallel_execute_work_available_barrier"/>
+         </wait>
+         <!-- tas_abstract_finalize for skeleton "E Task Parallelism" (id = E_fin) - barrier for main and worker threads - III -->
+         <wait id="2">
+            <sync ref="E_fin.tas_abstract_finalize_work_done_barrier"/>
+            <last_me ref="tas_thread_work_available_barrier"/>
+            <last_em ref="E_fin.tas_abstract_finalize_work_available_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- tas_abstract_init - Initialization for all skeletons with all worker threads only once after program startup -->
+   <sync id="A_ini.tas_abstract_init_worker_init_barrier">
+      <thread id="1">
+         <wait id="2,3,4,5">
+            <sync ref="tas_thread_worker_init_barrier"/>
+            <last_me ref="BEGIN"/>
+            <last_em ref="BEGIN"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="tas_thread_worker_init_barrier">
+      <thread id="2,3,4,5">
+         <wait id="1">
+            <sync ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+            <last_me ref="BEGIN"/>
+            <last_em ref="BEGIN"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- tas_abstract_init for skeleton A - bilateral barrier for each worker - I -->
+   <sync id="A_ini.tas_abstract_init_pattern_assigned_barrier_idle">
+      <thread id="1">
+         <wait id="2">
+            <sync ref="tas_thread_pattern_assigned_barrier_idle"/>
+            <last_me ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+            <last_em ref="tas_thread_worker_init_barrier"/>
+         </wait>
+         <wait id="3">
+            <sync ref="tas_thread_pattern_assigned_barrier_idle"/>
+            <last_me ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+            <last_em ref="tas_thread_worker_init_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="tas_thread_pattern_assigned_barrier_idle">
+      <thread id="2">
+         <wait id="1">
+            <sync ref="A_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+            <last_me ref="tas_thread_worker_init_barrier"/>
+            <last_em ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+         </wait>
+      </thread>
+      <thread id="3">
+         <wait id="1">
+            <sync ref="A_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+            <last_me ref="tas_thread_worker_init_barrier"/>
+            <last_em ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- tas_abstract_init for skeleton A - bilateral barrier for each worker - II -->
+   <sync id="A_ini.tas_abstract_init_pattern_assigned_barrier">
+      <thread id="1">
+         <wait id="2">
+            <sync ref="tas_thread_pattern_assigned_barrier"/>
+            <last_me ref="A_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+            <last_em ref="tas_thread_pattern_assigned_barrier_idle"/>
+         </wait>
+         <wait id="3">
+            <sync ref="tas_thread_pattern_assigned_barrier"/>
+            <last_me ref="A_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+            <last_em ref="tas_thread_pattern_assigned_barrier_idle"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="tas_thread_pattern_assigned_barrier">
+      <thread id="2">
+         <wait id="1">
+            <sync ref="A_ini.tas_abstract_init_pattern_assigned_barrier"/>
+            <last_me ref="tas_thread_pattern_assigned_barrier_idle"/>
+            <last_em ref="A_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+         </wait>
+      </thread>
+      <thread id="3">
+         <wait id="1">
+            <sync ref="A_ini.tas_abstract_init_pattern_assigned_barrier"/>
+            <last_me ref="tas_thread_pattern_assigned_barrier_idle"/>
+            <last_em ref="A_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- Main thread executing task parallelism "A Task Parallelism" (id = A) -->
+   <sync id="A.tas_taskparallel_execute_work_available_barrier">
+      <in_loop id="tas_taskparallel_execute_loop"/>
+      <thread id="1">
+         <wait id="2,3">
+            <sync ref="tas_thread_work_available_barrier"/>
+            <last_me ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+            <last_em ref="tas_thread_worker_init_barrier"/>
+            <last_me_in_loop ref="A.tas_taskparallel_execute_work_done_barrier"/>
+            <last_em_in_loop ref="tas_thread_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="A.tas_taskparallel_execute_work_done_barrier">
+      <thread id="1">
+         <wait id="2,3">
+            <sync ref="tas_thread_work_done_barrier"/>
+            <last_me ref="A.tas_taskparallel_execute_work_available_barrier"/>
+            <last_em ref="tas_thread_work_available_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- tas_abstract_finalize for skeleton "A Task Parallelism" (id = A_finalize) - barrier for main and worker threads - I -->
+   <sync id="A_finalize.tas_abstract_finalize_work_available_barrier">
+      <in_loop id="tas_taskparallel_execute_loop"/>
+      <thread id="1">
+         <wait id="2,3">
+            <sync ref="tas_thread_work_available_barrier"/>
+            <last_me ref="A.tas_abstract_finalize_work_done_barrier"/>
+            <last_em ref="tas_thread_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="A_finalize.tas_abstract_finalize_work_done_barrier">
+      <thread id="1">
+         <wait id="2,3">
+            <sync ref="tas_thread_work_done_barrier"/>
+            <last_me ref="A_finalize.tas_abstract_finalize_work_available_barrier"/>
+            <last_em ref="tas_thread_work_available_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- tas_abstract_init for skeleton D - bilateral barrier for each worker - I -->
+   <sync id="D_ini.tas_abstract_init_pattern_assigned_barrier_idle">
+      <thread id="2">
+         <wait id="4">
+            <sync ref="tas_thread_pattern_assigned_barrier_idle"/>
+            <last_me ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+            <last_em ref="tas_thread_worker_init_barrier"/>
+         </wait>
+         <wait id="5">
+            <sync ref="tas_thread_pattern_assigned_barrier_idle"/>
+            <last_me ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+            <last_em ref="tas_thread_worker_init_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="tas_thread_pattern_assigned_barrier_idle">
+      <thread id="4">
+         <wait id="2">
+            <sync ref="D_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+            <last_me ref="tas_thread_worker_init_barrier"/>
+            <last_em ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+         </wait>
+      </thread>
+      <thread id="5">
+         <wait id="2">
+            <sync ref="D_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+            <last_me ref="tas_thread_worker_init_barrier"/>
+            <last_em ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- tas_abstract_init for skeleton D - bilateral barrier for each worker - II -->
+   <sync id="D_ini.tas_abstract_init_pattern_assigned_barrier">
+      <thread id="2">
+         <wait id="4">
+            <sync ref="tas_thread_pattern_assigned_barrier"/>
+            <last_me ref="D_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+            <last_em ref="tas_thread_pattern_assigned_barrier_idle"/>
+         </wait>
+         <wait id="5">
+            <sync ref="tas_thread_pattern_assigned_barrier"/>
+            <last_me ref="D_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+            <last_em ref="tas_thread_pattern_assigned_barrier_idle"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="tas_thread_pattern_assigned_barrier">
+      <thread id="4">
+         <wait id="2">
+            <sync ref="D_ini.tas_abstract_init_pattern_assigned_barrier"/>
+            <last_me ref="tas_thread_pattern_assigned_barrier_idle"/>
+            <last_em ref="D_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+         </wait>
+      </thread>
+      <thread id="5">
+         <wait id="2">
+            <sync ref="D_ini.tas_abstract_init_pattern_assigned_barrier"/>
+            <last_me ref="tas_thread_pattern_assigned_barrier_idle"/>
+            <last_em ref="D_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- Main thread executing task parallelism "D Task Parallelism" (id = D) -->
+   <sync id="D.tas_taskparallel_execute_work_available_barrier">
+      <in_loop id="tas_taskparallel_execute_loop"/>
+      <thread id="2">
+         <wait id="4,5">
+            <sync ref="tas_thread_work_available_barrier"/>
+            <last_me ref="A_ini.tas_abstract_init_worker_init_barrier"/>
+            <last_em ref="tas_thread_worker_init_barrier"/>
+            <last_me_in_loop ref="D.tas_taskparallel_execute_work_done_barrier"/>
+            <last_em_in_loop ref="tas_thread_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="D.tas_taskparallel_execute_work_done_barrier">
+      <thread id="2">
+         <wait id="4,5">
+            <sync ref="tas_thread_work_done_barrier"/>
+            <last_me ref="D.tas_taskparallel_execute_work_available_barrier"/>
+            <last_em ref="tas_thread_work_available_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- tas_abstract_finalize for skeleton "D Task Parallelism" (id = D_fin) - barrier for main and worker threads - I -->
+   <sync id="D_fin.tas_abstract_finalize_work_available_barrier">
+      <in_loop id="tas_taskparallel_execute_loop"/>
+      <thread id="2">
+         <wait id="4,5">
+            <sync ref="tas_thread_work_available_barrier"/>
+            <last_me ref="D.tas_abstract_finalize_work_done_barrier"/>
+            <last_em ref="tas_thread_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="D_fin.tas_abstract_finalize_work_done_barrier">
+      <thread id="2">
+         <wait id="4,5">
+            <sync ref="tas_thread_work_done_barrier"/>
+            <last_me ref="D_fin.tas_abstract_finalize_work_available_barrier"/>
+            <last_em ref="tas_thread_work_available_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- tas_abstract_init for skeleton E - bilateral barrier for each worker - I -->
+   <sync id="E_ini.tas_abstract_init_pattern_assigned_barrier_idle">
+      <thread id="2">
+         <wait id="4">
+            <sync ref="tas_thread_pattern_assigned_barrier_idle"/>
+            <last_me ref="D_fin.tas_abstract_finalize_work_done_barrier"/>
+            <last_em ref="tas_thread_work_done_barrier"/>
+         </wait>
+         <wait id="5">
+            <sync ref="tas_thread_pattern_assigned_barrier_idle"/>
+            <last_me ref="D_fin.tas_abstract_finalize_work_done_barrier"/>
+            <last_em ref="tas_thread_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="tas_thread_pattern_assigned_barrier_idle">
+      <thread id="4">
+         <wait id="2">
+            <sync ref="E_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+            <last_me ref="tas_thread_work_done_barrier"/>
+            <last_em ref="D_fin.tas_abstract_finalize_work_done_barrier"/>
+         </wait>
+      </thread>
+      <thread id="5">
+         <wait id="2">
+            <sync ref="E_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+            <last_me ref="tas_thread_work_done_barrier"/>
+            <last_em ref="D_fin.tas_abstract_finalize_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- tas_abstract_init for skeleton E - bilateral barrier for each worker - II -->
+   <sync id="E_ini.tas_abstract_init_pattern_assigned_barrier">
+      <thread id="2">
+         <wait id="4">
+            <sync ref="tas_thread_pattern_assigned_barrier"/>
+            <last_me ref="E_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+            <last_em ref="tas_thread_pattern_assigned_barrier_idle"/>
+         </wait>
+         <wait id="5">
+            <sync ref="tas_thread_pattern_assigned_barrier"/>
+            <last_me ref="E_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+            <last_em ref="tas_thread_pattern_assigned_barrier_idle"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="tas_thread_pattern_assigned_barrier">
+      <thread id="4">
+         <wait id="2">
+            <sync ref="E_ini.tas_abstract_init_pattern_assigned_barrier"/>
+            <last_me ref="tas_thread_pattern_assigned_barrier_idle"/>
+            <last_em ref="E_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+         </wait>
+      </thread>
+      <thread id="5">
+         <wait id="2">
+            <sync ref="E_ini.tas_abstract_init_pattern_assigned_barrier"/>
+            <last_me ref="tas_thread_pattern_assigned_barrier_idle"/>
+            <last_em ref="E_ini.tas_abstract_init_pattern_assigned_barrier_idle"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- Main thread executing task parallelism "E Task Parallelism" (id = E) -->
+   <sync id="E.tas_taskparallel_execute_work_available_barrier">
+      <in_loop id="tas_taskparallel_execute_loop"/>
+      <thread id="2">
+         <wait id="4,5">
+            <sync ref="tas_thread_work_available_barrier"/>
+            <last_me ref="D_fin.tas_abstract_finalize_work_done_barrier"/>
+            <last_em ref="tas_thread_work_done_barrier"/>
+            <last_me_in_loop ref="E.tas_taskparallel_execute_work_done_barrier"/>
+            <last_em_in_loop ref="tas_thread_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="E.tas_taskparallel_execute_work_done_barrier">
+      <thread id="2">
+         <wait id="4,5">
+            <sync ref="tas_thread_work_done_barrier"/>
+            <last_me ref="E.tas_taskparallel_execute_work_available_barrier"/>
+            <last_em ref="tas_thread_work_available_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- tas_abstract_finalize for skeleton "E Task Parallelism" (id = E_fin) - barrier for main and worker threads - I -->
+   <sync id="E_fin.tas_abstract_finalize_work_available_barrier">
+      <in_loop id="tas_taskparallel_execute_loop"/>
+      <thread id="2">
+         <wait id="4,5">
+            <sync ref="tas_thread_work_available_barrier"/>
+            <last_me ref="E.tas_abstract_finalize_work_done_barrier"/>
+            <last_em ref="tas_thread_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="E_fin.tas_abstract_finalize_work_done_barrier">
+      <thread id="2">
+         <wait id="4,5">
+            <sync ref="tas_thread_work_done_barrier"/>
+            <last_me ref="E_fin.tas_abstract_finalize_work_available_barrier"/>
+            <last_em ref="tas_thread_work_available_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- additional csection for skeletons -->
+   <csection id="tas_worker_get_worker_available_lock tas_get_workers_available_worker_available_lock tas_worker_release_worker_available_lock tas_thread_worker_available_lock">
+      <thread id="1,2,3,4,5"/>
+   </csection>
+</program>
+

@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    TODO define vocabulary identification
+    PUBLIC ID: -//vendor//vocabulary//EN
+    SYSTEM ID: http://server/path/verschachtelt.dtd
+-->
+
+<!--
+    An example how to use this DTD from your XML document:
+
+    <?xml version="1.0"?>
+    <!DOCTYPE program SYSTEM "verschachtelt.dtd">
+    <program>
+    ...
+    </program>
+-->
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT program (tas_pipelineparallelisms|tas_dataparallelisms|tas_taskparallelisms|threads|csections)*>
+<!ATTLIST program
+    xsi:schemaLocation CDATA #REQUIRED
+    xmlns:xsi CDATA #REQUIRED
+    xmlns CDATA #REQUIRED
+  >
+  
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT csections (csection)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT csection (thread)*>
+<!ATTLIST csection
+    id CDATA #IMPLIED
+    description CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT threads (thread)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT thread EMPTY>
+<!ATTLIST thread
+    main CDATA #IMPLIED
+    ref CDATA #IMPLIED
+    routine CDATA #IMPLIED
+    id CDATA #IMPLIED
+    core CDATA #IMPLIED
+    cluster CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT tas_taskparallelisms (tas_taskparallelism)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT tas_taskparallelism (tasks|threads)*>
+<!ATTLIST tas_taskparallelism
+    executed_after CDATA #IMPLIED
+    called_by CDATA #IMPLIED
+    main_as_worker CDATA #IMPLIED
+    description CDATA #IMPLIED
+    id CDATA #REQUIRED
+    init_id CDATA #IMPLIED
+    finalize_id CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT tasks (task)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT task EMPTY>
+<!ATTLIST task
+    thread CDATA #REQUIRED
+    function CDATA #REQUIRED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT tas_dataparallelisms (tas_dataparallelism)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT tas_dataparallelism (task|threads)*>
+<!ATTLIST tas_dataparallelism
+    executed_after CDATA #IMPLIED
+    called_by CDATA #IMPLIED
+    nr_args CDATA #IMPLIED
+    main_as_worker CDATA #IMPLIED
+    description CDATA #IMPLIED
+    id CDATA #REQUIRED
+    init_id CDATA #IMPLIED
+    finalize_id CDATA #IMPLIED
+  >
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT tas_pipelineparallelisms (tas_pipelineparallelism)*>
+
+<!--- Put your DTDDoc comment here. -->
+<!ELEMENT tas_pipelineparallelism (tasks|threads)*>
+<!ATTLIST tas_pipelineparallelism
+    executed_after CDATA #IMPLIED
+    called_by CDATA #IMPLIED
+    iterations CDATA #IMPLIED
+    main_as_worker CDATA #IMPLIED
+    description CDATA #IMPLIED
+    id CDATA #REQUIRED
+    init_id CDATA #IMPLIED
+    finalize_id CDATA #IMPLIED
+  >

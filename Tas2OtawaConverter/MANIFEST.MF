@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: simple-xml-2.7.1.jar
+Main-Class: eu.parmerasa.sik.tas2otawa.Tas2OtawaConverter
+

@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<program xsi:schemaLocation="http://www.w3schools.com tas.xsd" xmlns="http://www.w3schools.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <threads>
+        <thread cluster="0" core="0" id="0" routine="demo_fft_init"/>
+        <thread cluster="0" core="1" id="1" routine="tas_thread"/>
+        <thread cluster="0" core="2" id="2" routine="tas_thread"/>
+        <thread cluster="0" core="3" id="3" routine="tas_thread"/>
+        <thread cluster="1" core="0" id="4" routine="tas_thread"/>
+        <thread cluster="1" core="1" id="5" routine="tas_thread"/>
+        <thread cluster="1" core="2" id="6" routine="tas_thread"/>
+        <thread cluster="1" core="3" id="7" routine="tas_thread"/>
+    </threads>
+   <tas_dataparallelisms>
+      <tas_dataparallelism id="tas_pipeline_step_tp" description="Data Parallelism for step 2 in Pipeline" main_as_worker="1" nr_args="4" called_by="tas_pipeline_fft">
+         <threads>
+            <thread ref="4" main="1"/>
+            <thread ref="5"/>
+            <thread ref="6"/>
+            <thread ref="7"/>
+         </threads>
+         <task function="a_to_A_sub"/>
+      </tas_dataparallelism>
+   </tas_dataparallelisms>
+    <tas_pipelineparallelisms>
+        <tas_pipelineparallelism id="tas_pipeline_fft" description="Parallel FFT calculation with pipeline" main_as_worker="1" iterations="25">
+            <threads>
+                <thread ref="0" main="1"/>
+                <thread ref="1"/>
+                <thread ref="2"/>
+                <thread ref="3"/>
+                <thread ref="4"/>
+            </threads>
+            <tasks>
+                <task function="create_fft_input"/>
+                <task function="a_to_A"/>
+                <task function="AB_to_C"/>
+                <task function="C_to_D"/>
+                <task function="D_to_d"/>
+            </tasks>
+        </tas_pipelineparallelism>
+   </tas_pipelineparallelisms>
+</program>

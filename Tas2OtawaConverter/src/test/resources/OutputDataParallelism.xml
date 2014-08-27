@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<program xsi:schemaLocation="http://www.w3schools.com annotations.xsd" xmlns="http://www.w3schools.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <thread id="0">
+      <!-- <mapping cluster="0" core="0" /> -->
+      <routine id="demo_5_main_core_0"/>
+   </thread>
+   <thread id="1">
+      <!-- <mapping cluster="0" core="1" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <thread id="2">
+      <!-- <mapping cluster="1" core="0" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <thread id="3">
+      <!-- <mapping cluster="1" core="1" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <thread id="4">
+      <!-- <mapping cluster="2" core="0" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <thread id="5">
+      <!-- <mapping cluster="2" core="1" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <thread id="6">
+      <!-- <mapping cluster="3" core="0" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <thread id="7">
+      <!-- <mapping cluster="3" core="1" /> -->
+      <routine id="tas_thread"/>
+   </thread>
+   <!-- Main thread executing data parallelism "Genetic Algorithm" (id = genetic_dp_execute) -->
+   <sync id="genetic_dp_execute.tas_dataparallel_execute_work_available_barrier">
+      <in_loop id="tas_dataparallel_execute_loop"/>
+      <thread id="0">
+         <wait id="1,2,3,4,5,6,7">
+            <sync ref="tas_thread_work_available_barrier"/>
+            <last_me ref="BEGIN"/>
+            <last_em ref="BEGIN"/>
+            <last_me_in_loop ref="genetic_dp_execute.tas_dataparallel_execute_work_done_barrier"/>
+            <last_em_in_loop ref="tas_thread_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <sync id="genetic_dp_execute.tas_dataparallel_execute_work_done_barrier">
+      <thread id="0">
+         <wait id="1,2,3,4,5,6,7">
+            <sync ref="tas_thread_work_done_barrier"/>
+            <last_me ref="genetic_dp_execute.tas_dataparallel_execute_work_available_barrier"/>
+            <last_em ref="tas_thread_work_available_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- Worker threads waiting for work executing a skeleton -->
+   <sync id="tas_thread_work_available_barrier">
+      <in_loop id="loop_runnable"/>
+      <!-- for data parallelism skeleton "Genetic Algorithm" (id = genetic_dp_execute) -->
+      <thread id="1,2,3,4,5,6,7">
+         <wait id="0">
+            <sync ref="genetic_dp_execute.tas_dataparallel_execute_work_available_barrier"/>
+            <last_me ref="BEGIN"/>
+            <last_em ref="BEGIN"/>
+            <last_me_in_loop ref="tas_thread_work_done_barrier"/>
+            <last_em_in_loop ref="genetic_dp_execute.tas_dataparallel_execute_work_done_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- Worker threads waiting for completion of work -->
+   <sync id="tas_thread_work_done_barrier">
+      <!-- for data parallelism skeleton "Genetic Algorithm" (id = genetic_dp_execute) -->
+      <thread id="1,2,3,4,5,6,7">
+         <wait id="0">
+            <sync ref="genetic_dp_execute.tas_dataparallel_execute_work_done_barrier"/>
+            <last_me ref="tas_thread_work_available_barrier"/>
+            <last_em ref="genetic_dp_execute.tas_dataparallel_execute_work_available_barrier"/>
+         </wait>
+      </thread>
+   </sync>
+   <!-- additional csection for skeletons -->
+   <csection id="tas_worker_get_worker_available_lock tas_get_workers_available_worker_available_lock tas_worker_release_worker_available_lock tas_thread_worker_available_lock">
+      <thread id="0,1,2,3,4,5,6,7"/>
+   </csection>
+   <!-- Random Number Generator -->
+   <csection id="rando_lock">
+      <thread id="0,1,2,3,4,5,6,7"/>
+   </csection>
+</program>

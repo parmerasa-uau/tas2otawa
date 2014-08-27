@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.w3schools.com"	xmlns="http://www.w3schools.com" elementFormDefault="qualified">
+   <xsd:element name="program">
+      <xsd:complexType>
+         <xsd:all>
+            <xsd:element ref="threads" minOccurs="1" maxOccurs="1" />
+            <xsd:element ref="tas_taskparallelisms" minOccurs="0" maxOccurs="1" />
+            <xsd:element ref="tas_dataparallelisms" minOccurs="0" maxOccurs="1" />
+            <xsd:element ref="tas_pipelineparallelisms" minOccurs="0" maxOccurs="1"  />
+            <xsd:element ref="csections" minOccurs="0" maxOccurs="1" />
+         </xsd:all>
+      </xsd:complexType>
+   </xsd:element>
+   
+   <xsd:element name="threads">
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element name="thread" maxOccurs="unbounded">
+               <xsd:complexType>
+                  <xsd:simpleContent>
+                     <xsd:extension base="xsd:string">
+                        <xsd:attribute name="cluster" type="xsd:int" use="required" />
+                        <xsd:attribute name="core" type="xsd:int" use="required" />
+                        <xsd:attribute name="id" type="xsd:string" use="required" />
+                        <xsd:attribute name="routine" type="xsd:string" use="required" />
+                     </xsd:extension>
+                  </xsd:simpleContent>
+               </xsd:complexType>
+            </xsd:element>
+         </xsd:sequence>
+      </xsd:complexType>
+   </xsd:element>
+   
+   <xsd:complexType name="parallelism">
+      <xsd:sequence>
+         <xsd:element name="threads" minOccurs="1" maxOccurs="1">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="thread" maxOccurs="unbounded">
+                     <xsd:complexType>
+                        <xsd:simpleContent>
+                           <xsd:extension base="xsd:string">
+                              <xsd:attribute name="ref" type="xsd:string" use="required" />
+                              <xsd:attribute name="main" type="xsd:int" />
+                           </xsd:extension>
+                        </xsd:simpleContent>
+                     </xsd:complexType>
+                  </xsd:element>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+      </xsd:sequence>
+      <xsd:attribute name="id" type="xsd:ID" use="required" />
+      <xsd:attribute name="init_id" type="xsd:string" use="optional" />
+      <xsd:attribute name="finalize_id" type="xsd:string" use="optional" />
+	  <xsd:attribute name="description" type="xsd:string" use="required" />
+      <xsd:attribute name="main_as_worker" type="xsd:int" use="required" />
+      <xsd:attribute name="called_by" type="xsd:IDREF" default="BEGIN"/>
+      <xsd:attribute name="executed_after" type="xsd:IDREF"/>
+   </xsd:complexType>
+   
+   
+   <xsd:element name="tas_taskparallelisms">
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element name="tas_taskparallelism" maxOccurs="unbounded" type="tas_taskparallelism" />
+         </xsd:sequence>
+      </xsd:complexType>
+   </xsd:element>
+
+   <xsd:complexType name="tas_taskparallelism">
+      <xsd:complexContent>
+         <xsd:extension base="parallelism">
+            <xsd:sequence>
+               <xsd:element name="tasks" minOccurs="1" maxOccurs="1">
+                  <xsd:complexType>
+                     <xsd:sequence>
+                        <xsd:element name="task" maxOccurs="unbounded">
+                           <xsd:complexType>
+                              <xsd:simpleContent>
+                                 <xsd:extension base="xsd:string">
+                                    <xsd:attribute name="function" type="xsd:string" use="required" />
+                                    <xsd:attribute name="thread" type="xsd:string" use="required" />
+                                 </xsd:extension>
+                              </xsd:simpleContent>
+                           </xsd:complexType>
+                        </xsd:element>
+                     </xsd:sequence>
+                  </xsd:complexType>
+               </xsd:element>
+            </xsd:sequence>
+         </xsd:extension>
+      </xsd:complexContent>   
+   </xsd:complexType>
+
+   <xsd:element name="tas_dataparallelisms">
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element name="tas_dataparallelism" maxOccurs="unbounded" type="tas_dataparallelism" />
+         </xsd:sequence>
+      </xsd:complexType>
+   </xsd:element>
+
+   <xsd:complexType name="tas_dataparallelism">
+      <xsd:complexContent>
+         <xsd:extension base="parallelism">
+            <xsd:sequence>
+               <xsd:element name="task" minOccurs="1" maxOccurs="1">
+                  <xsd:complexType>
+                     <xsd:simpleContent>
+                        <xsd:extension base="xsd:string">
+                           <xsd:attribute name="function" type="xsd:string" use="required" />
+                        </xsd:extension>
+                     </xsd:simpleContent>
+                  </xsd:complexType>
+               </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute name="nr_args" type="xsd:int" use="required" />
+         </xsd:extension>
+      </xsd:complexContent>
+   </xsd:complexType>
+               
+   <xsd:element name="tas_pipelineparallelisms">
+      <xsd:complexType>
+         <xsd:sequence>
+            <xsd:element name="tas_pipelineparallelism" maxOccurs="unbounded" type="tas_pipelineparallelism" />
+         </xsd:sequence>
+      </xsd:complexType>
+   </xsd:element>
+
+   <xsd:complexType name="tas_pipelineparallelism">
+      <xsd:complexContent>
+         <xsd:extension base="parallelism">
+            <xsd:sequence>
+               <xsd:element name="tasks" minOccurs="1" maxOccurs="1">
+                  <xsd:complexType>
+                     <xsd:sequence>
+                        <xsd:element name="task" maxOccurs="unbounded">
+                           <xsd:complexType>
+                              <xsd:simpleContent>
+                                 <xsd:extension base="xsd:string">
+                                    <xsd:attribute name="function" type="xsd:string" use="required" />
+                                 </xsd:extension>
+                              </xsd:simpleContent>
+                           </xsd:complexType>
+                        </xsd:element>
+                     </xsd:sequence>
+                  </xsd:complexType>
+               </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute name="iterations" type="xsd:int" use="required" />
+         </xsd:extension>
+      </xsd:complexContent>
+   </xsd:complexType>
+            
+   <xsd:element name="csections">
+      <xsd:complexType>
+         <xsd:sequence>   
+            <xsd:element name="csection" minOccurs="0" maxOccurs="unbounded">
+               <xsd:complexType>
+                  <xsd:sequence>
+                     <xsd:element name="thread" minOccurs="1" maxOccurs="1">
+                        <xsd:complexType>
+                           <xsd:simpleContent>
+                              <xsd:extension base="xsd:string">
+                                 <xsd:attribute name="id" type="xsd:string" use="required" />
+                              </xsd:extension>
+                           </xsd:simpleContent>
+                        </xsd:complexType>
+                     </xsd:element>
+                  </xsd:sequence>
+                  <xsd:attribute name="id" type="xsd:string" use="required" />
+                  <xsd:attribute name="description" type="xsd:string" use="required" />
+               </xsd:complexType>
+            </xsd:element>
+         </xsd:sequence>
+      </xsd:complexType>   
+   </xsd:element>
+   
+</xsd:schema>
